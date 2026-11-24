@@ -94,7 +94,7 @@ class VIPSessionUrlViewModel : ViewModel() {
     /**
      * Creates the url to launch a VIP SDK session.
      * For more info on how to build this url, see
-     * https://developer.vippreferred.com/integration-steps/invoke-web-component#open-via-url
+     * https://developer.vippreferred.com/Guides/invoke-web-component#open-via-url
      */
     fun createVIPSessionUrl(sessionId: String): String {
         return "https://$ENVIRONMENT.api-gaming.paviliononline.io/sdk?mode=deposit#$sessionId"
