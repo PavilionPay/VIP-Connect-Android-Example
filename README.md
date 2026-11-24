@@ -23,8 +23,20 @@ This demo app uses Composable functions to create its UI, but Compose is not a r
 method appropriate for your app.
 
 VIP Connect uses [Finicity Connect WebSDK](https://developer.mastercard.com/open-finance-us/documentation/connect/integrating/sdk/web-sdk/sdk/) or [Plaid Hosted Link](https://plaid.com/docs/link/hosted-link/) to securely connect your customer's bank accounts with VIP Connect; launching
-the VIP Connect SDK inside an Auth Tab (in private mode, as described above) is necessary to provide the best experience to your customers. Do not host
-the SDK in a WebView: a browser tab is required for OAuth with your customer's Financial Institution.
+the VIP Connect SDK inside an Auth Tab (in private mode, as described above) is necessary to provide the best experience to your customers.
+
+### WebViews are not supported
+
+Do not host VIP Connect in an embedded WebView (`android.webkit.WebView`). It is not supported for native Android apps. When a patron adds a bank account, they sign
+in at their bank through OAuth, and that sign-in must not run inside an embedded WebView:
+
+- **Finicity (Mastercard Data Connect):** Mastercard's [integration guide](https://developer.mastercard.com/open-finance-us/documentation/connect/integrating/non-sdk/non-sdk-android/) says the bank's OAuth session must open in a secure container
+  "as we don't support WebViews for OAuth process".
+- **Plaid:** Plaid's [WebView page](https://plaid.com/docs/link/webview/) says "Using webviews to present Link is deprecated", and its
+  [changelog](https://plaid.com/docs/changelog/) says WebView-based integrations are no longer allowed for new Plaid customers (April 2025).
+- **Banks restrict it.** Both providers name Chase as a bank that restricts sign-in from WebViews.
+
+An Auth Tab, and the Custom Tab it falls back to, run in the patron's browser, not in an embedded WebView, so bank sign-in works in them.
 
 ## Returning to the app from VIP Connect
 
