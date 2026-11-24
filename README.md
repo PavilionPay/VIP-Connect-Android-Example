@@ -43,6 +43,37 @@ If the patron's browser does not support Auth Tab, the same call opens a Custom 
 the intent filter for the `closevip` scheme in `AndroidManifest.xml`, which `MainActivity` handles in `onNewIntent`. The scheme in the manifest must
 match the scheme of your `returnURL`.
 
+The scheme of the `returnURL` must be the same in all three of these places. If one differs, the tab will not close by itself.
+
+| Place | In the sample |
+|---|---|
+| The `returnURL` field of the create-session request | `RETURN_URL` in `VIPSessionUrlViewModel.kt` |
+| The redirect scheme given to the Auth Tab | `RETURN_SCHEME`, passed to `AuthTabIntent.launch(...)` in `MainActivity.kt` |
+| The intent filter in `AndroidManifest.xml` | `<data android:scheme="closevip" />`, on an activity declared `singleTask` |
+
+You do not need App Links or a Digital Asset Links file to run the sample.
+
+## How a session ends
+
+Your app is told one of two things: the `returnURL` was reached, or the patron closed the browser session. Neither one tells you whether a
+transaction was made.
+
+| What the patron does | What VIP Connect does | What your app receives |
+|---|---|---|
+| Completes the transaction | Navigates to your `returnURL` | `AuthTabIntent.RESULT_OK`, with the url in `resultUri` |
+| Taps **Cancel Deposit**, then **Yes** | Shows a "Logged Out" page with a **Continue** button, and stays there | Nothing yet |
+| Then taps **Continue** | Navigates to the same `returnURL` | The same result as a completed transaction |
+| Closes the tab | Nothing | `AuthTabIntent.RESULT_CANCELED` |
+
+- **Reaching the `returnURL` means the session ended, not that money moved.** A cancelled deposit followed by **Continue** looks the same as a
+  completed one, which is why the sample says "session ended".
+- **A closed session can still have a completed transaction**, if the patron closed it after finishing instead of waiting for the return.
+- **Confirm the outcome on your server** before you update a balance or show a success message. Please contact your Pavilion Payments
+  representative for the right way to do this for your integration.
+
+When the browser falls back to a Custom Tab, the `returnURL` arrives as an intent (`onNewIntent`) instead of `RESULT_OK`. Closing the tab still gives
+`RESULT_CANCELED`.
+
 ## Running the sample app
 
 The sample launches the VIP Connect flow as a demonstration. It uses fixed test data to create a real session on your operator, so it needs your
@@ -99,8 +130,23 @@ patron of your own. The sample does not enroll new patrons.
 `toPatronRequest` in the same file sets the rest of the request: a 10.00 deposit, a new `transactionID` for every session, `productType` `0` and the
 `returnURL` `closevip://done`.
 
-### Not for production
+## Building your own app
+
+The sample is a starting point for the browser-session code, not for the session-creation code.
 
 While this sample app creates its JWT token locally and accesses VIP Mobility APIs directly, this is NOT a recommended practice for production apps!
 Your app should not have access to your operator secrets, and should use a more secure method of obtaining a session id such as getting it from a backend
 service that holds the secret values and acts as a middle layer between the app and VIP Connect's APIs.
+
+Before you ship:
+
+- **Move token signing and session creation to your backend.** It holds the operator secret, calls `patronsession/existing`, and returns only the
+  session id to the app.
+- **Send real patron and transaction data** in place of the built-in patron, the fixed 10.00 amount and the generated `transactionID`.
+- **Choose your own `returnURL` scheme**, unique to your app, and change it in every place listed under
+  [Returning to the app from VIP Connect](#returning-to-the-app-from-vip-connect).
+- **Keep the browser session and private mode.** Do not replace it with a WebView.
+- **Point at your production environment** once your operator is set up there.
+
+What you can copy as-is: `authTabLauncher`, `launchVipConnect` and `handleReturnUrl` in `MainActivity.kt`, plus the intent filter and the `singleTask` setting in
+`AndroidManifest.xml`.
