@@ -38,6 +38,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun LandingView(
     viewModel: VIPSessionUrlViewModel,
+    sessionStatus: String?,
     setSessionUrl: (String) -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -60,7 +61,14 @@ fun LandingView(
                 fontWeight = FontWeight.Light,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.fillMaxHeight(.85f))
+            Spacer(modifier = Modifier.fillMaxHeight(.75f))
+
+            // The result of the last VIP Connect session, if there was one
+            Text(
+                text = sessionStatus ?: "",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.height(48.dp)
+            )
 
             Button(
                 onClick = {
@@ -106,7 +114,7 @@ fun LandingView(
                     Text("Session Creation Failed")
                 },
                 text = {
-                    Text("Could not create a valid session; please check your secret values in VIPSessionUrlViewModel.")
+                    Text("Could not create a valid session; please check the vip.jwtIssuer, vip.jwtSecret and vip.environment values in local.properties, and that the test patron exists for your operator.")
                 }
             )
         }

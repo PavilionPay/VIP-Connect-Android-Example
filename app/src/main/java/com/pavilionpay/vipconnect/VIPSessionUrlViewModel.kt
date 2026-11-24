@@ -28,7 +28,7 @@ import java.util.Calendar
 import java.util.UUID
 
 /**
- * A ViewModel responsible for creating a valid session url to pass to the PavilionPlaidWebview.
+ * A ViewModel responsible for creating a valid session url to launch the VIP Connect SDK.
  * This example gets a session url by passing preset mock user data to a Pavilion test endpoint;
  * other implementations will obtain session urls through accessing other services.
  */
@@ -37,23 +37,28 @@ class VIPSessionUrlViewModel : ViewModel() {
     companion object {
 
         // You need to provide these values in order to run this demo app against your operator.
+        // Add them to the local.properties file in the project root (see the README); the build copies them
+        // into BuildConfig. local.properties is not checked in, so your secret stays out of source control.
         // These values were created when your Pavilion Operator account was created.
         // Contact your Pavilion representative if you need help obtaining these values.
-        const val JWT_ISSUER: String = <YOUR VALUE HERE>
-        const val JWT_SECRET: String = <YOUR VALUE HERE>
-        const val ENVIRONMENT: String = <YOUR VALUE HERE>
+        const val JWT_ISSUER: String = BuildConfig.VIP_JWT_ISSUER
+        const val JWT_SECRET: String = BuildConfig.VIP_JWT_SECRET
+        const val ENVIRONMENT: String = BuildConfig.VIP_ENVIRONMENT
 
-        // This url is arbitrary and you may change it to any value, but it must match the value in AndroidManifest.xml
-        const val RETURN_URL = "closevip://done"
+        // This url is arbitrary and you may change it to any value, but its scheme must match the scheme
+        // in AndroidManifest.xml
+        const val RETURN_SCHEME = "closevip"
+        const val RETURN_URL = "$RETURN_SCHEME://done"
 
 
         val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
 
-        //
+        // The test patron the session is created for. The patron must already exist for your operator in the
+        // environment you chose; replace these values with a patron of your own if it does not.
         val defaultPreferredUser = UserObject(
-            patronId = "1ef56720-47b6-46bc-9a3a-b11bd511d10b",
-            vipCardNumber = "7210908875", // preferred
-            dateOfBirth = LocalDate.of(1994, 11, 13)
+            patronId = "cb7c887d-6687-4aa5-a664-31cf6c810df7",
+            vipCardNumber = "7210806973", // preferred
+            dateOfBirth = LocalDate.of(1980, 4, 15)
         )
     }
 
@@ -64,6 +69,10 @@ class VIPSessionUrlViewModel : ViewModel() {
      * connect to those.
      */
     suspend fun getPatronSessionId(): String? {
+        if (JWT_ISSUER.isBlank() || JWT_SECRET.isBlank() || ENVIRONMENT.isBlank()) {
+            return null
+        }
+
         val patronResponseDtoResult: PatronResponseDto? = try {
             client.post("https://$ENVIRONMENT.api-gaming.paviliononline.io/sdk/api/patronsession/existing") {
                 contentType(ContentType.Application.Json)
@@ -135,9 +144,10 @@ class VIPSessionUrlViewModel : ViewModel() {
             add(Calendar.SECOND, 2000)
             time
         }
-        // Set the "not before" time to 5 seconds from now
+        // Set the "not before" time to 5 minutes ago, so the token is valid at once even if the device clock
+        // is slightly ahead of the server
         val nbf = Calendar.getInstance().run {
-            add(Calendar.SECOND, 5)
+            add(Calendar.MINUTE, -5)
             time
         }
         // Create and sign the JWT

@@ -16,6 +16,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTask"
             android:theme="@style/Theme.iGaming">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,7 +25,9 @@
             </intent-filter>
 
 <!--            The following scheme must match the return url that you supply to the VIP Connect-->
-<!--            session initialization call in order for the SDK to return to your app-->
+<!--            session initialization call in order for the SDK to return to your app.-->
+<!--            An Auth Tab returns the url to the app directly; this filter receives it when the patron's-->
+<!--            browser does not support Auth Tab and a Custom Tab was opened instead.-->
             <intent-filter>
                 <data android:scheme="closevip" />
                 <action android:name="android.intent.action.VIEW" />
