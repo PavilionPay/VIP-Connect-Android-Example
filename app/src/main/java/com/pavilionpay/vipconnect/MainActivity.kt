@@ -38,9 +38,11 @@ class MainActivity : ComponentActivity() {
     private val authTabLauncher: ActivityResultLauncher<Intent> =
         AuthTabIntent.registerActivityResultLauncher(this) { result ->
             sessionStatus = when (result.resultCode) {
-                // The SDK navigated to the return url: the session is complete. result.resultUri holds the full url,
-                // including the transactionId and transactionType query parameters that VIP Connect appends.
-                AuthTabIntent.RESULT_OK -> "VIP Connect session complete."
+                // The SDK navigated to the return url: the session has ended. This happens after a finished
+                // transaction and also after the patron cancels in VIP Connect and taps "Continue", so it does not
+                // by itself mean a transaction was made. result.resultUri holds the full url, including the
+                // transactionId and transactionType query parameters that VIP Connect appends.
+                AuthTabIntent.RESULT_OK -> "VIP Connect session ended."
                 // The patron closed the tab. The transaction may still have completed if they closed it at the end.
                 AuthTabIntent.RESULT_CANCELED -> "VIP Connect session closed."
                 else -> "VIP Connect session ended unexpectedly (result code ${result.resultCode})."
@@ -106,7 +108,7 @@ class MainActivity : ComponentActivity() {
      */
     private fun handleReturnUrl(intent: Intent?) {
         if (intent?.data?.scheme == VIPSessionUrlViewModel.RETURN_SCHEME) {
-            sessionStatus = "VIP Connect session complete."
+            sessionStatus = "VIP Connect session ended."
         }
     }
 }

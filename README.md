@@ -36,7 +36,7 @@ closes and your app receives the result in the `ActivityResultCallback` register
 
 | Result code | Meaning |
 |---|---|
-| `AuthTabIntent.RESULT_OK` | VIP Connect navigated to the `returnURL`; the session is complete. `resultUri` holds the full url |
+| `AuthTabIntent.RESULT_OK` | VIP Connect navigated to the `returnURL`; the session has ended. `resultUri` holds the full url |
 | `AuthTabIntent.RESULT_CANCELED` | The patron closed the tab. The transaction may still have completed if they closed it at the end |
 
 If the patron's browser does not support Auth Tab, the same call opens a Custom Tab instead. The `returnURL` then comes back to the app through
@@ -73,7 +73,8 @@ operator's values before it can run.
 4. Choose your phone or emulator and run the `app` configuration.
 5. On the home screen, tap **Launch VIP SDK**. VIP Connect opens in an Auth Tab.
 6. Complete or cancel the transaction in VIP Connect. When VIP Connect navigates to `closevip://done`, the tab closes by itself and the home screen
-   shows "VIP Connect session complete."
+   shows "VIP Connect session ended." VIP Connect uses the same `returnURL` after a finished transaction and after a cancelled one, so this
+   message does not by itself mean a transaction was made.
 
 ### If it doesn't start
 
