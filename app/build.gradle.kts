@@ -1,19 +1,32 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     kotlin("plugin.serialization")
 }
 
+// Operator values for the demo are read from local.properties, which is not checked in.
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+fun localValue(name: String): String = (localProperties.getProperty(name) ?: "").trim()
+
 android {
     namespace = "com.pavilionpay.vipconnect"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.pavilionpay.vipconnect"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("String", "VIP_JWT_ISSUER", "\"${localValue("vip.jwtIssuer")}\"")
+        buildConfigField("String", "VIP_JWT_SECRET", "\"${localValue("vip.jwtSecret")}\"")
+        buildConfigField("String", "VIP_ENVIRONMENT", "\"${localValue("vip.environment")}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -61,8 +74,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.4")
-    implementation("androidx.navigation:navigation-compose:2.7.7")
-    implementation("androidx.browser:browser:1.8.0")
+    implementation("androidx.browser:browser:1.9.0")
 
     val ktorVersion = "2.3.6"
     implementation("io.ktor:ktor-client-core:$ktorVersion")
